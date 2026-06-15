@@ -1,34 +1,34 @@
-# 04 — Missing values
+# 04 Missing values
 
-Counts and shares first, then the part people skip: whether the gaps are
+Counts and shares first, then whether the gaps are
 *isolated* or *consecutive runs* within each unit. The sample panel is seeded
 with one isolated gap, one three-period run (IND `rer`, 2010–2012), and one
-dropped span (FRA, 2008–2009) so every function returns something visible.
+dropped span (FRA, 2008–2009) so every function returns something visible
 
 ---
 
 ### Count missing per column (and share)
 
-**Python — code**
+**Python code**
 ```python
 panel.isna().sum().sum()    # total NA cells
 panel.isna().sum()          # per column
 panel.isna().mean()         # share per column
 ```
-**Python — example**
+**Python example**
 ```python
 panel.isna().sum()
 #   dlny    2
 #   rer     3
 #   cpi     1
 ```
-**R — code**
+**R code**
 ```r
 sum(is.na(panel))           # total NA cells
 colSums(is.na(panel))       # per column
 colMeans(is.na(panel))      # share per column
 ```
-**R — example**
+**R example**
 ```r
 colSums(is.na(panel))
 #   dlny rer cpi
@@ -39,7 +39,7 @@ colSums(is.na(panel))
 
 ### Tidy missingness summary table
 
-**Python — code**
+**Python code**
 ```python
 def miss_summary(df):
     return (pd.DataFrame({"n_missing": df.isna().sum(),
@@ -47,7 +47,7 @@ def miss_summary(df):
             .sort_values("n_missing", ascending=False)
             .rename_axis("column").reset_index())
 ```
-**Python — example**
+**Python example**
 ```python
 miss_summary(panel).head(3)
 #   column  n_missing  pct_missing
@@ -55,7 +55,7 @@ miss_summary(panel).head(3)
 #     dlny          2         1.35
 #      cpi          1         0.68
 ```
-**R — code**
+**R code**
 ```r
 miss_summary <- function(df) {
   tibble(column = names(df),
@@ -64,7 +64,7 @@ miss_summary <- function(df) {
     arrange(desc(n_missing))
 }
 ```
-**R — example**
+**R example**
 ```r
 miss_summary(panel)
 # # A tibble: 8 x 3  (rer 3 / 2.03, dlny 2 / 1.35, cpi 1 / 0.68, then zeros)
@@ -74,23 +74,23 @@ miss_summary(panel)
 
 ### Rows with any / no missing
 
-**Python — code**
+**Python code**
 ```python
 panel[panel.isna().any(axis=1)]    # rows with at least one NA
 panel.dropna()                     # complete rows only
 panel.dropna(subset=["dlny"])      # complete on specific columns
 ```
-**Python — example**
+**Python example**
 ```python
 len(panel), len(panel.dropna())    # (148, 142)
 ```
-**R — code**
+**R code**
 ```r
 panel %>% filter(if_any(everything(), is.na))     # rows with at least one NA
 panel %>% filter(if_all(everything(), ~ !is.na(.)))  # complete rows
 complete.cases(panel)                              # base-R logical vector
 ```
-**R — example**
+**R example**
 ```r
 c(nrow(panel), sum(complete.cases(panel)))   # 148 then 142
 ```
@@ -99,37 +99,37 @@ c(nrow(panel), sum(complete.cases(panel)))   # 148 then 142
 
 ### Missingness by group
 
-**Python — code**
+**Python code**
 ```python
 (panel.groupby("countrycode")["dlny"]
       .apply(lambda s: round(100 * s.isna().mean(), 1))
       .rename("pct_dlny_missing").reset_index())
 ```
-**Python — example**
+**Python example**
 ```python
 #   countrycode  pct_dlny_missing
 #           BRA               4.2
 #           UKR               4.5
 #           ...               0.0
 ```
-**R — code**
+**R code**
 ```r
 panel %>% group_by(countrycode) %>%
   summarise(pct_dlny_missing = round(100 * mean(is.na(dlny)), 1), .groups = "drop")
 ```
-**R — example**
+**R example**
 ```r
 # BRA 4.2, UKR 4.5, others 0.0
 ```
 
 ---
 
-### Consecutive NA runs within a unit (the key one)
+### Consecutive NA runs within a unit 
 
 Run-length encoding gives one row per missing run: which unit, where it starts
-and ends, and how long it is.
+and ends, and how long it is
 
-**Python — code**
+**Python code**
 ```python
 import numpy as np
 def na_runs(df, group, time, value):
@@ -145,13 +145,13 @@ def na_runs(df, group, time, value):
                         "run_end_time": r[time].iloc[-1], "run_length": len(r)})
     return pd.DataFrame(out)
 ```
-**Python — example**
+**Python example**
 ```python
 na_runs(panel, "countrycode", "year", "rer")
 #   countrycode  run_start_time  run_end_time  run_length
 #           IND            2010          2012           3
 ```
-**R — code**
+**R code**
 ```r
 na_runs <- function(df, group, time, value) {
   g <- rlang::as_name(rlang::enquo(group))    # resolve names to strings once
@@ -167,7 +167,7 @@ na_runs <- function(df, group, time, value) {
     }) %>% ungroup()
 }
 ```
-**R — example**
+**R example**
 ```r
 na_runs(panel, countrycode, year, rer)
 # # A tibble: 1 x 4  -> IND, 2010, 2012, 3
@@ -179,7 +179,7 @@ na_runs(panel, countrycode, year, rer)
 
 A one-number-per-unit quality flag (0 if the column is complete for that unit).
 
-**Python — code**
+**Python code**
 ```python
 def longest_na_gap(df, group, time, value):
     runs = na_runs(df, group, time, value)
@@ -189,12 +189,12 @@ def longest_na_gap(df, group, time, value):
     g = runs.groupby(group)["run_length"].max().rename("max_consecutive_na")
     return units.merge(g, on=group, how="left").fillna({"max_consecutive_na": 0})
 ```
-**Python — example**
+**Python example**
 ```python
 longest_na_gap(panel, "countrycode", "year", "rer")
 #   IND -> 3, all others -> 0
 ```
-**R — code**
+**R code**
 ```r
 longest_na_gap <- function(df, group, time, value) {
   na_runs(df, {{ group }}, {{ time }}, {{ value }}) %>%
@@ -202,7 +202,7 @@ longest_na_gap <- function(df, group, time, value) {
     summarise(max_consecutive_na = max(run_length), .groups = "drop")
 }
 ```
-**R — example**
+**R example**
 ```r
 longest_na_gap(panel, countrycode, year, rer)
 # IND -> 3
@@ -215,7 +215,7 @@ longest_na_gap(panel, countrycode, year, rer)
 Different question: are the periods a consecutive 1-step sequence, or are whole
 unit-years missing?
 
-**Python — code**
+**Python code**
 ```python
 def index_gaps(df, group, time):
     def f(sub):
@@ -225,14 +225,14 @@ def index_gaps(df, group, time):
                           "n_missing_periods": span - n_obs})
     return df.sort_values([group, time]).groupby(group).apply(f).reset_index()
 ```
-**Python — example**
+**Python example**
 ```python
 index_gaps(panel, "countrycode", "year")
 #   countrycode  n_obs  span  is_consecutive  n_missing_periods
 #           FRA     24    26           False                  2
 #           USA     28    28            True                  0
 ```
-**R — code**
+**R code**
 ```r
 index_gaps <- function(df, group, time) {
   df %>% arrange({{ group }}, {{ time }}) %>% group_by({{ group }}) %>%
@@ -242,7 +242,7 @@ index_gaps <- function(df, group, time) {
               n_missing_periods = span - n_obs, .groups = "drop")
 }
 ```
-**R — example**
+**R example**
 ```r
 index_gaps(panel, countrycode, year)
 # FRA: n_obs 24, span 26, is_consecutive FALSE, n_missing_periods 2
