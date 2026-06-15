@@ -88,6 +88,12 @@ panel.dropna(subset=["dlny"])      # complete on specific columns
 ```python
 len(panel), len(panel.dropna())    # (148, 142)
 ```
+
+Keeping the cleaned dataset 
+
+`clean = panel.dropna(subset=["dlny"])`
+
+
 **R code**
 ```r
 panel %>% filter(if_any(everything(), is.na))     # rows with at least one NA
