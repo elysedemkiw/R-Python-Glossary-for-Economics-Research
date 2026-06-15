@@ -15,6 +15,8 @@ panel.isna().sum().sum()    # total NA cells
 panel.isna().sum()          # per column
 panel.isna().mean()         # share per column
 ```
+
+Two options either `panel = pd.read_csv("[Path]")` or replace like this `df.isna().sum().sum()`
 **Python example**
 ```python
 panel.isna().sum()
