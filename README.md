@@ -1,4 +1,4 @@
-#R & Python Glossary for Econ Research
+# R & Python Glossary for Econ Research
 
 Basic but common tools:) 
 
