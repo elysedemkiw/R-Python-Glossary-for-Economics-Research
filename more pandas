@@ -1,0 +1,205 @@
+PROBABILITY THAT MAN HAS HEIGHT >180CM
+
+
+from scipy.stats import norm
+
+# Parameters of the normal distribution
+mean_height = 175  # Mean height in cm
+std_dev_height = 5  # Standard deviation of height in cm
+
+# Height threshold (greater than 180 cm)
+height_threshold = 180
+
+# Calculate the z-score for the height threshold
+z_score = (height_threshold - mean_height) / std_dev_height
+
+# Calculate the probability using the CDF of the normal distribution
+probability = 1 - norm.cdf(z_score)
+
+# Print the result
+print(f'Probability is {probability}')
+
+
+
+
+A/B TESTING 
+
+import numpy as np
+from scipy.stats import ttest_ind
+
+# Sample data for Group A and Group B (number of conversions)
+np.random.seed(42)  # For reproducibility
+
+group_a_conversions = np.random.normal(loc=100, scale=15, size=100)  # Mean=100, Standard Deviation=15
+group_b_conversions = np.random.normal(loc=110, scale=20, size=100)  # Mean=110, Standard Deviation=20
+
+# Calculate the means of the two samples
+mean_a = np.mean(group_a_conversions)
+mean_b = np.mean(group_b_conversions)
+
+# Perform the independent two-sample t-test
+t_statistic, p_value = ttest_ind(group_a_conversions, group_b_conversions)
+
+# Print the results
+print(f'Mean conversion rate for Group A is {mean_a}')
+print(f'Mean conversion rate for Group B is  {mean_b}')
+print(f'T-statistic is  {t_statistic}')
+print(f'P-value is {p_value}')
+
+# Print the result of the test
+if p_value < 0.05:
+    print('The difference in mean conversion rates between the two groups is statistically significant.')
+    if mean_b > mean_a:
+        print('Layout 2 (Group B) has a higher mean conversion rate than Layout 1 (Group A).')
+    else:
+        print('Layout 1 (Group A) has a higher mean conversion rate than Layout 2 (Group B).')
+else:
+    print('There is no statistically significant difference in mean conversion rates between the two groups.')
+
+
+
+
+
+data[0:3] - outputs the rows from zero to three 0, 1, 2, for all columns (pay attention, this method doesn't include the last index);
+
+data[:3] - outputs the rows from zero to three 0, 1, 2, for all columns;
+
+data[997:999] - outputs rows from 997 to 999: 997 and 998, for all columns (this is the last row);
+
+data[997:] - outputs rows from 997 to the last one: 997, 998, 999, for all columns;
+
+data[:] - outputs all rows of the dataset data for all columns.
+
+
+
+
+Your task here is to output the necessary rows and columns. Follow the algorithm:
+
+Import the pandas library with the pd alias.
+Read the csv file.
+Assign to data variable information about the columns 'Title', 'Stars', 'Category'(in this order) with rows with indices from 15 to 85.
+Output the data_extracted variable.
+
+# Import the `pandas` library
+import pandas as pd
+
+# Read the csv file
+data = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/4bf24830-59ba-4418-969b-aaf8117d522e/IMDb_Data_final.csv')
+
+# Slice the data
+## data_extracted = data.loc[15:85 , ['Title','Stars' , 'Category']]
+
+# Output the resulting dataset
+print(data_extracted)
+
+LAMBDA FUNCTIONS 
+
+lambda x: x * 2
+
+as opposed to 
+def multiply_by_two(x):
+  return x * 2
+
+Add a new adjusted column (e.g. each row + 5)
+
+df['Age_plus_five']=df['Age'].apply[lambda x: x + 5]
+print(df)
+
+LAMBDA FOR FILTERING 
+
+filtered = df.iloc[lambda x: [i for i in range(len(x)) if i % 2 == 0]]
+
+x = the whole DataFrame
+len(x) = number of rows
+range(len(x)) = row positions: 0, 1, 2, 3, ...
+if i % 2 == 0 = keep even positions only
+
+basically gives 
+
+filtered = df.iloc[[0, 2, 4, 6]]
+
+
+top_3 = df.iloc[lambda x: range(3)]
+
+
+
+
+# Import the `pandas` library
+import pandas as pd
+
+# Read the csv file
+data = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/4bf24830-59ba-4418-969b-aaf8117d522e/IMDb_Data_final.csv')
+
+# Extract data with even indices
+even = data.iloc[lambda x: x.index % 2 == 0]
+# Extract data with odd indices
+odd = data.iloc[lambda x: x.index % 2 != 0]
+
+# Output data
+print(even.head(5), odd.tail(5))
+
+
+FIRST 50 ROWS AND COLUMN 1 AND COLUMN 4
+import pandas as pd
+
+data = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/4bf24830-59ba-4418-969b-aaf8117d522e/IMDb_Data_final.csv', index_col = 0)
+
+# Extract needed rows and columns
+data_extracted = data.iloc[:50 , [1,4]]
+
+print(data_extracted.head()
+
+)
+
+
+One of the most useful tools is to set conditions on a column to extract specific values. So, you just put the condition of the column inside the .loc[] attribute. Look at the several conditions and outputs.
+
+data.loc[data['est_diameter_max'] < 0.005].head() - extracts the first five rows where the column values 'est_diameter_max' are less then 0.005;
+
+data.loc[data['absolute_magnitude'] >= 30].head() - extracts the first five rows where the column values 'absolute_magnitude' are greater than or equal to 30.
+
+import pandas as pd
+
+data = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/4bf24830-59ba-4418-969b-aaf8117d522e/planet')
+
+# Extract all rows from the columns 'name' and 'hazardous'
+data_extracted = data.loc[: , ['name', 'hazardous']]
+
+# Filter data
+data_filtered = data_extracted.loc[data_extracted['hazardous'] == True]
+
+# Output dataset
+print(data_filtered)
+
+
+FILTER TWO CONDITIONS: AND 
+
+data.loc[condition_1 & condition_2]
+
+FILTER TWO CONDITIONS: OR
+data.loc[condition_1 | condition_2]
+
+
+
+
+import pandas as pd
+
+data = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/4bf24830-59ba-4418-969b-aaf8117d522e/planet', index_col = 0)
+
+# Extract data
+data_extracted = data.loc[(data['absolute_magnitude'] >= 25) & (data['hazardous'] == False)]
+
+# Output data
+print(data_extracted.sample(5))
+
+SEXIER CODE 
+
+# The second way
+import pandas as pd
+data = pd.read_csv('https://codefinity-content-media.s3.eu-west-1.amazonaws.com/4bf24830-59ba-4418-969b-aaf8117d522e/planet', index_col = 0)
+condition_1 = data['est_diameter_min'] > 3.5
+condition_2 = data['hazardous'] == True
+data_extracted = data.loc[condition_1 & condition_2]
+
+
+  
